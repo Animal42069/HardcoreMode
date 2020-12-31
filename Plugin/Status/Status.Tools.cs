@@ -2,41 +2,35 @@
 using AIProject;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HardcoreMode
 {
 	public partial class HardcoreMode
 	{
-		static partial class Status
+		static public partial class Status
 		{
-			static readonly HashSet<LifeStatsController> agentWarn =
-				new HashSet<LifeStatsController>();
+			static readonly List<LifeStatsController> agentWarn = new List<LifeStatsController>();
 			static bool healthWarn = false;
 			static bool foodWarn = false;
 			static bool staminaWarn = false;
 
-			public static void SetRect()
-			{
-				rect = new Rect(StatusX.Value, StatusY.Value, WIDTH, Screen.height);
-			}
-
 			public static int Timer(ref float timer, float max)
-			{
-				timer += Time.deltaTime;
+            {
+                timer += Time.deltaTime;
 
-				if (timer >= max)
-				{
-					int mult = (int)Mathf.Floor(timer / max);
-					timer %= max;
+                if (timer < max)
+                    return 0;
 
-					return mult;
-				}
+                int mult = (int)Mathf.Floor(timer / max);
+                timer %= max;
 
-				return 0;
-			}
+                return mult;
+            }
 
-			static void TryWarn(LifeStatsController controller, int threshold)
+            static void TryWarn(LifeStatsController controller, int threshold)
 			{
 				float stat = controller["health"];
 
@@ -82,7 +76,7 @@ namespace HardcoreMode
 
 				int agentThreshold = AgentWarn.Value;
 
-				foreach (LifeStatsController controller in agentControllers)
+				foreach (var controller in agentControllers.Where(n => n != null))
 					TryWarn(controller, agentThreshold);
 			}
 
@@ -99,6 +93,7 @@ namespace HardcoreMode
 				if (Directory.Exists(directory) && File.Exists(path))
 					File.Delete(path);
 			}
+
 		}
 	}
 }

@@ -29,20 +29,20 @@ namespace HardcoreMode
 			static Rect dragRect = new Rect(0f, 0f, WIDTH, 20f);
 			static Vector2 scroll = new Vector2();
 
-			public static IOrderedEnumerable<Tuple<StuffItem, string, int, int>>  foods;
+			public static IOrderedEnumerable<Tuple<StuffItem, string, int, float>>  foods;
 			public static bool visible = false;
 
 			static void Draw_Food()
 			{
 				bool refresh = false;
 
-				foreach (Tuple<StuffItem, string, int, int> food in foods)
+				foreach (Tuple<StuffItem, string, int, float> food in foods)
 				{
 					GUILayout.BeginHorizontal();
 					{
-						GUILayout.Label($"x{food.Item1.Count} {food.Item2} [{food.Item3}]");
+						GUILayout.Label($"x{food.Item1.Count} {food.Item2}");
 
-						if (GUILayout.Button($"+{food.Item4}%", GUILayout.Width(BUTTON_WIDTH)))
+						if (GUILayout.Button($"+{food.Item4:F1}%", GUILayout.Width(BUTTON_WIDTH)))
 						{
 							playerController["food"] += food.Item4;
 

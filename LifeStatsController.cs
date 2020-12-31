@@ -14,6 +14,7 @@ namespace HardcoreMode
 	{
 		public AgentActor agent;
 		Dictionary<string, float> stats = new Dictionary<string, float>();
+		public StatusHUD statusHUD;
 
 		protected override void OnCardBeingSaved(GameMode currentGameMode)
 		{
@@ -62,7 +63,22 @@ namespace HardcoreMode
 		{
 			base.Start();
 
+			if (ChaControl.gameObject.transform.parent.name.Contains("Merchant"))
+				return;
+
+			if (ChaControl.gameObject.transform.parent.name.Contains("Player"))
+				statusHUD = new StatusHUD("", new Vector3(-950, 515, 0));
+			else
+				statusHUD = new StatusHUD(ChaControl.fileParam.fullname, new Vector3(-950, 450, 0));
 			HardcoreMode.AddController(this);
+		}
+
+		protected override void OnDestroy()
+        {
+			statusHUD.Destroy();
+			HardcoreMode.RemoveController(this);
+
+			base.OnDestroy();
 		}
 
 		protected void LateUpdate()

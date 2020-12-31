@@ -15,25 +15,30 @@ namespace HardcoreMode
 
 			public static void Update()
 			{
-				if (thresholdsNew == null)
-				{
-					thresholdsBackup = Manager.Resources.Instance.PlayerProfile.CanSleepTime;
-					thresholdsNew = new EnvironmentSimulator.DateTimeThreshold[thresholdsBackup.Length];
+				if (thresholdsNew != null)
+					return;
 
-					EnvironmentSimulator.DateTimeSerialization midnight =
+                thresholdsBackup = Resources.Instance.PlayerProfile.CanSleepTime;
+
+				if (Map.Instance.Player == null || thresholdsBackup == null || thresholdsBackup.Length <= 0)
+					return;
+
+				thresholdsNew = new EnvironmentSimulator.DateTimeThreshold[thresholdsBackup.Length];
+				
+				EnvironmentSimulator.DateTimeSerialization midnight =
 						new EnvironmentSimulator.DateTimeSerialization(
 							new Traverse(Map.Instance.Player).Field("_midnightTime").GetValue<DateTime>()
 						);
-					EnvironmentSimulator.DateTimeThreshold threshold =
-						new EnvironmentSimulator.DateTimeThreshold()
-						{
-							min = midnight,
-							max = midnight
-						};
 
-					for (int i = 0; i < thresholdsNew.Length; i++)
-						thresholdsNew[i] = threshold;
-				}
+				EnvironmentSimulator.DateTimeThreshold threshold =
+					new EnvironmentSimulator.DateTimeThreshold()
+					{
+						min = midnight,
+						max = midnight
+					};
+
+				for (int i = 0; i < thresholdsNew.Length; i++)
+					thresholdsNew[i] = threshold;
 			}
 		}
 	}

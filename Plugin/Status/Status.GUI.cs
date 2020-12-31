@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using AIProject;
+using System;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HardcoreMode
 {
@@ -7,137 +10,133 @@ namespace HardcoreMode
 	{
 		static partial class Status
 		{
-			const float WIDTH = 160f;
+			public static bool visible = true;
 
-			const float LABEL_WIDTH = 140f;
+			static Text playerStomach;
+			static Text playerFatigue;
+			static Image playerHealthBar;
+			static Image agentHealthBar;
+			static GameObject playerStomachObject;
+			static GameObject playerFatigueObject;
+			static GameObject playerHealthObject;
+			static GameObject agentHealthObject;
 
-			static Rect rect = new Rect(0, 0, WIDTH, Screen.height);
-			static Rect innerRect = new Rect(0f, 0f, WIDTH, Screen.height);
+			static bool initialized = false;
+			static AgentActor selectedAgent;
 
-			static GUIStyle healthStyle;
-			static GUIStyle foodStyle;
-			static GUIStyle staminaStyle;
-
-			static bool visible = true;
-
-			static void Draw_Player()
+			public static void Initialize()
 			{
-				bool flag0 = PlayerDeath.Value;
-				bool flag1 = PlayerLife.Value;
+				Console.WriteLine("Hardcore Initialize");
 
-				if (!flag1 && !flag0)
+				var statusGuage = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/PlayerContent/Guage");
+				var playerContentUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/PlayerContent");
+				var agentContentUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/AgentContent");
+
+				if (playerContentUI == null || agentContentUI == null || statusGuage == null)
 					return;
 
-				GUILayout.BeginVertical(GUI.skin.box);
-				{
-					if (flag0)
-						GUILayout.Label($"Health: {playerController["health"]:F0}%", healthStyle);
+				playerContentUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("SexLabel")).FirstOrDefault().localPosition = new Vector3(-270, -440, 0);
+				playerContentUI.GetComponentsInChildren<Text>(true).Where(x => x.text.Contains("Gender")).FirstOrDefault().rectTransform.localPosition = new Vector3(-290, -390, 0);
+				playerContentUI.GetComponentsInChildren<Text>(true).Where(x => x.text.Contains("Gender")).FirstOrDefault().rectTransform.sizeDelta = new Vector3(120, 50, 0);
 
-					if (flag1)
-					{
-						GUILayout.Label($"Food: {playerController["food"]:F0}%", foodStyle);
-						GUILayout.Label($"Stamina: {playerController["stamina"]:F0}%", staminaStyle);
-					}
+				agentContentUI.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Motivation")).FirstOrDefault().GetComponentsInChildren<Text>(true).Where(x => x.name.Contains("Text")).FirstOrDefault().rectTransform.sizeDelta = new Vector3(120, 40, 0);
+				agentContentUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("Sick")).FirstOrDefault().localPosition = new Vector3(-290, -390, 0);	
+				agentContentUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("SickIcon")).FirstOrDefault().localPosition = new Vector3(240, -120, 0);
+
+				if (playerStomachObject == null)
+				{
+					var hungerUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/AgentContent/Hunger");
+					hungerUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("Text")).FirstOrDefault().offsetMax = new Vector2(100, 0);
+					playerStomachObject = Instantiate(hungerUI);
+					playerStomachObject.transform.SetParent(playerContentUI.transform);
+					playerStomachObject.transform.localPosition = new Vector3(140, 0, 0);
+					playerStomachObject.transform.localScale = new Vector3(1, 1, 1);
 				}
-				GUILayout.EndVertical();
+				playerStomach = playerStomachObject.GetComponentsInChildren<Text>(true).Where(x => x.name.Contains("Hungerlabel")).FirstOrDefault();
+
+				if (playerFatigueObject == null)
+				{
+					var staminaUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/AgentContent/Physical");
+					playerFatigueObject = Instantiate(staminaUI);
+					playerFatigueObject.transform.SetParent(playerContentUI.transform);
+					playerFatigueObject.transform.localPosition = new Vector3(-40, 0, 0);
+					playerFatigueObject.transform.localScale = new Vector3(1, 1, 1);
+				}
+				playerFatigue = playerFatigueObject.GetComponentsInChildren<Text>(true).Where(x => x.name.Contains("PhysicalLabel")).FirstOrDefault();
+
+				playerHealthObject = Instantiate(statusGuage);
+				playerHealthObject.transform.SetParent(playerContentUI.transform);
+				playerHealthObject.name = "PlayerHealth";
+				playerHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
+				playerHealthObject.transform.localScale = new Vector3(1, 1, 1);
+				playerHealthObject.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().localScale = new Vector3(1f, 1.1f, 1f);
+				playerHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().color = new Color(1, 1, 1, 1);
+				playerHealthObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("PlayerHealth")).FirstOrDefault().sizeDelta = new Vector2(254, 25);
+				playerHealthBar = playerHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("PlayerHealth")).FirstOrDefault();
+				playerHealthBar.color = new Color(1, 0, 0, 1f);
+
+				agentHealthObject = Instantiate(statusGuage);
+				agentHealthObject.transform.SetParent(agentContentUI.transform);
+				agentHealthObject.name = "AgentHealth";
+				agentHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
+				agentHealthObject.transform.localScale = new Vector3(1, 1, 1);
+				agentHealthObject.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().localScale = new Vector3(1f, 1.1f, 1f);
+				agentHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().color = new Color(1, 1, 1, 1);
+				agentHealthObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("AgentHealth")).FirstOrDefault().sizeDelta = new Vector2(254, 25);
+				agentHealthBar = agentHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("AgentHealth")).FirstOrDefault();
+				agentHealthBar.color = new Color(1, 0, 0, 1f);
+
+				initialized = true;
+
+				UpdateCellPhoneVisibility(PlayerDeath.Value, PlayerLife.Value, AgentDeath.Value);
+
+				Console.WriteLine($"Hardcore Initialized");
 			}
 
-			static void Draw_Agent()
-			{
-				bool flag0 = AgentDeath.Value;
-				bool flag1 = AgentRevive.Value && !Permadeath.Value;
-
-				if (agentControllers.Count == 0 ||
-					(!flag0 && !flag1 && !agentControllers.Any(v => v["health"] == 0)))
+			public static void UpdateCellPhoneVisibility(bool playerHealth, bool playerStats, bool agentHealth)
+            {
+				if (!initialized)
 					return;
 
-				GUILayout.BeginVertical(GUI.skin.box);
-				{
-					foreach (LifeStatsController controller in agentControllers)
-					{
-						if (controller.ChaControl == null)
-						{
-							agentControllersDump.Add(controller);
-							continue;
-						}
-
-						if (controller["health"] > 0)
-						{
-							if (flag0)
-								GUILayout.Label(
-									$"{controller.agent.CharaName}: {controller["health"]:F0}%",
-									healthStyle,
-									GUILayout.Width(LABEL_WIDTH),
-									GUILayout.ExpandWidth(false)
-								);
-						}
-						else if (flag1)
-							GUILayout.Label(
-								$"{controller.agent.CharaName}: {24f * controller["revive"] / 100f:F0} Hour(s)",
-								GUILayout.Width(LABEL_WIDTH),
-								GUILayout.ExpandWidth(false)
-							);
-					}
-				}
-				GUILayout.EndVertical();
+				playerHealthObject.SetActive(playerHealth);
+				playerFatigueObject.SetActive(playerStats);
+				playerStomachObject.SetActive(playerStats);
+				agentHealthObject.SetActive(agentHealth);
 			}
 
-			static void Draw(int id)
-			{
-				GUILayout.BeginArea(innerRect);
-				{
-					GUILayout.BeginVertical();
-					{
-						Draw_Player();
-						Draw_Agent();
-					}
-					GUILayout.EndVertical();
-				}
-				GUILayout.EndArea();
-			}
-
-			static public void OnGUI()
-			{
-				if (playerController == null ||
-					!visible)
+			static void UpdatePlayerHUD()
+            {
+				if (!initialized)
 					return;
 
-				if (healthStyle == null)
+				playerHealthBar.fillAmount = playerController["health"] / 100;
+				playerStomach.text = $"{playerController["food"]:F0}";
+				playerFatigue.text = $"{(100 - playerController["stamina"]):F0}";
+
+				if (playerController != null && playerController.statusHUD != null)
+					playerController.statusHUD.Update(playerController["health"], playerController["stamina"], playerController["food"]);
+			}
+
+			static void UpdateAgentHUDs()
+			{
+				if (!initialized)
+					return;
+
+				foreach (var controller in agentControllers.Where(n => n != null))
 				{
-					healthStyle = new GUIStyle(GUI.skin.label)
-					{
-						fontStyle = FontStyle.Bold,
-						fontSize = 12,
-						normal =
-					{
-						textColor = Color.green
-					}
-					};
+					if (controller.statusHUD != null)
+						controller.statusHUD.Update(controller["health"], 
+							controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Physical], 
+							controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Hunger]);
 
-					foodStyle = new GUIStyle(GUI.skin.label)
-					{
-						fontStyle = FontStyle.Bold,
-						fontSize = 12,
-						normal =
-					{
-						textColor = Color.yellow
-					}
-					};
-
-					staminaStyle = new GUIStyle(GUI.skin.label)
-					{
-						fontStyle = FontStyle.Bold,
-						fontSize = 12
-					};
+					if (selectedAgent != null && selectedAgent.ChaControl == controller.ChaControl)
+						agentHealthBar.fillAmount = controller["health"] / 100;
 				}
+			}
 
-				rect = GUI.Window(
-					WindowIDStatus.Value,
-					rect,
-					Draw,
-					"",
-					GUI.skin.label
-				);
+			public static void UpdateSelectedAgent(int selectionID)
+			{
+				Singleton<Manager.Map>.Instance.AgentTable.TryGetValue(selectionID, out selectedAgent);
 			}
 		}
 	}
