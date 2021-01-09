@@ -113,7 +113,7 @@
     <Compile Include="Plugin\Dead\Dead.GUI.cs" />
     <Compile Include="Plugin\Dead\Dead.Hooks.cs" />
     <Compile Include="Plugin\Dead\Dead.Tools.cs" />
-    <Compile Include="Plugin\FoodMenu\FoodMenu.Controller.cs" />
+    <Compile Include="Plugin\FoodMenu\FoodMenu.Hooks.cs" />
     <Compile Include="Plugin\FoodMenu\FoodMenu.Tools.cs" />
     <Compile Include="Plugin\Plugin.Controller.cs" />
     <Compile Include="Plugin\Sleep\Sleep.Controller.cs" />

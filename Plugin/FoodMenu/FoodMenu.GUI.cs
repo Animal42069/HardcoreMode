@@ -1,101 +1,159 @@
-﻿using AIProject.SaveData;
+﻿using AIProject.UI;
+using AIProject.SaveData;
 using Manager;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using System;
 
 namespace HardcoreMode
 {
-	public partial class HardcoreMode
-	{
-		static partial class FoodMenu
-		{
-			const float MARGIN_TOP = 20f;
-			const float MARGIN_BOTTOM = 10f;
-			const float MARGIN_LEFT = 10f;
-			const float MARGIN_RIGHT = 10f;
-			const float WIDTH = 300f;
-			const float HEIGHT = 300f;
-			static readonly float X = Screen.width - WIDTH - 20f;
-			static readonly float Y = (Screen.height - HEIGHT) / 2f;
-			const float INNER_WIDTH = WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
-			const float INNER_HEIGHT = HEIGHT - MARGIN_TOP - MARGIN_BOTTOM;
+    public partial class HardcoreMode
+    {
+        static partial class FoodMenu
+        {
+            static StuffItem currentItem;
+            static GameObject inventoryEatObject;
+            static GameObject storageEatObject;
+            static GameObject refrigeratorEatObject;
+            static GameObject inventoryDrinkObject;
+            static GameObject storageDrinkObject;
+            static GameObject refrigeratorDrinkObject;
+            public static void Initialize()
+            {
+                if (inventoryEatObject == null)
+                    inventoryEatObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/InventoryUI(Clone)/InfoPanel/Infomation/InfoLayout",
+                        new Vector3(-135, 40, 0), new Vector2(65, -20), ConsumeFromInventoryUI, "sp_ai_category_00_07");
 
-			const float BUTTON_WIDTH = 60f;
+                if (storageEatObject == null)
+                    storageEatObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/SendPanel/Infomation/Send",
+                    new Vector3(-165, 0, 0), new Vector2(60, -15), ConsumeFromItemBoxUI, "sp_ai_category_00_07");
 
-			static Rect rect = new Rect(X, Y, WIDTH, HEIGHT);
-			static Rect innerRect = new Rect(MARGIN_LEFT, MARGIN_TOP, INNER_WIDTH, INNER_HEIGHT);
-			static Rect dragRect = new Rect(0f, 0f, WIDTH, 20f);
-			static Vector2 scroll = new Vector2();
+                if (refrigeratorEatObject == null)
+                    refrigeratorEatObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/SendPanel/Infomation/Send",
+                    new Vector3(-165, 0, 0), new Vector2(60, -15), ConsumeFromRefrigeratorUI, "sp_ai_category_00_07");
 
-			public static IOrderedEnumerable<Tuple<StuffItem, string, int, float>>  foods;
-			public static bool visible = false;
+                if (inventoryDrinkObject == null)
+                    inventoryDrinkObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/InventoryUI(Clone)/InfoPanel/Infomation/InfoLayout",
+                    new Vector3(-135, 40, 0), new Vector2(65, -20), ConsumeFromInventoryUI, "sp_ai_category_00_06");
 
-			static void Draw_Food()
-			{
-				bool refresh = false;
+                if (storageDrinkObject == null)
+                    storageDrinkObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/SendPanel/Infomation/Send",
+                    new Vector3(-165, 0, 0), new Vector2(60, -15), ConsumeFromItemBoxUI, "sp_ai_category_00_06");
 
-				foreach (Tuple<StuffItem, string, int, float> food in foods)
-				{
-					GUILayout.BeginHorizontal();
-					{
-						GUILayout.Label($"x{food.Item1.Count} {food.Item2}");
+                if (refrigeratorDrinkObject == null)
+                    refrigeratorDrinkObject = CreateConsumeButton("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/SendPanel/Infomation/Send",
+                    new Vector3(-165, 0, 0), new Vector2(60, -15), ConsumeFromRefrigeratorUI, "sp_ai_category_00_06");
+            }
 
-						if (GUILayout.Button($"+{food.Item4:F1}%", GUILayout.Width(BUTTON_WIDTH)))
-						{
-							playerController["food"] += food.Item4;
+            static void ConsumeFromInventoryUI()
+            {
+                if (currentItem == null || currentItem.Count <= 0)
+                    return;
 
-							if (food.Item1.Count <= 1)
-							{
-								List<StuffItem> list = Map.Instance.Player.PlayerData.ItemList;
+                int itemCount = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/InventoryUI(Clone)/InfoPanel").GetComponent<ItemInfoRemoveUI>().Count;    
+                ItemListUI itemUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/InventoryUI(Clone)/InventoryViewer(Clone)/ListPanel").GetComponent<ItemListUI>();
+                List<StuffItem> itemList = Singleton<Game>.Instance.WorldData.PlayerData.ItemList;
 
-								if (refresh = list.Contains(food.Item1))
-									list.Remove(food.Item1);
-							}
-							else
-								food.Item1.Count--;
-						}
-					}
-					GUILayout.EndHorizontal();
-				}
+                ConsumeItem(ref currentItem, itemCount, ref itemUI, ref itemList);
+            }
 
-				if (refresh)
-					foods = GetEdible();
-			}
+            static void ConsumeFromItemBoxUI()
+            {
+                if (currentItem == null || currentItem.Count <= 0)
+                    return;
 
-			static void Draw(int id)
-			{
-				GUI.DragWindow(dragRect);
-				GUILayout.BeginArea(innerRect);
-				{
-					GUILayout.BeginVertical();
-					{
-						scroll = GUILayout.BeginScrollView(scroll);
-						{
-							Draw_Food();
-						}
-						GUILayout.EndScrollView();
-					}
-					GUILayout.EndVertical();
-				}
-				GUILayout.EndArea();
-			}
+                ItemListUI itemUI;
+                List<StuffItem> itemList;
+                int itemCount = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/SendPanel").GetComponent<ItemSendPanelUI>().Count;
+                bool fromBox = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/SendPanel").GetComponent<ItemSendPanelUI>().takeout;
 
-			static public void OnGUI()
-			{
-				if (!visible ||
-					foods == null ||
-					playerController == null)
-					return;
+                if (fromBox)
+                {
+                    itemUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/ItemBoxPanel/Layout/InventoryViewer(Clone)/ListPanel").GetComponent<ItemListUI>();
+                    itemList = Singleton<Game>.Instance.WorldData.Environment.ItemListInStorage;
+                }
+                else
+                {
+                    itemUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/ItemBoxUI(Clone)/Top/Panel/InventoryPanel/Layout/InventoryViewer(Clone)/ListPanel").GetComponent<ItemListUI>();
+                    itemList = Singleton<Game>.Instance.WorldData.PlayerData.ItemList;
+                }
 
-				rect = GUI.Window(
-					WindowIDFoodMenu.Value,
-					rect,
-					Draw,
-					"Food"
-				);
-			}
-		}
-	}
+                ConsumeItem(ref currentItem, itemCount, ref itemUI, ref itemList);
+            }
+
+            static void ConsumeFromRefrigeratorUI()
+            {
+                if (currentItem == null || currentItem.Count <= 0)
+                    return;
+
+                ItemListUI itemUI;
+                List<StuffItem> itemList;
+                int itemCount = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/SendPanel").GetComponent<ItemSendPanelUI>().Count;
+                bool fromBox = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/SendPanel").GetComponent<ItemSendPanelUI>().takeout;
+
+                if (fromBox)
+                {
+                    itemUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/ItemBoxPanel/Layout/InventoryViewer(Clone)/ListPanel").GetComponent<ItemListUI>();
+                    itemList = Singleton<Game>.Instance.WorldData.Environment.ItemListInPantry;
+                }
+                else
+                {
+                    itemUI = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/RefrigeratorUI(Clone)/Top/Panel/InventoryPanel/Layout/InventoryViewer(Clone)/ListPanel").GetComponent<ItemListUI>();
+                    itemList = Singleton<Game>.Instance.WorldData.PlayerData.ItemList;
+                }
+
+                ConsumeItem(ref currentItem, itemCount, ref itemUI, ref itemList);
+            }
+
+            static void ConsumeItem(ref StuffItem itemToConsume, int amountToConsume, ref ItemListUI itemUI, ref List<StuffItem> itemList)
+            {
+                if (amountToConsume <= 0 || itemUI == null)
+                    return;
+
+                float caloriesPerItem = GetCalories(itemToConsume) * CalorieRate.Value / CaloriePool.Value;
+                float waterPerItem = GetWaterContent(itemToConsume) * WaterRate.Value / WaterPool.Value;
+                if (caloriesPerItem > 0)
+                {
+                    int maxAmountToConsume = 1 + (int)((100 - playerController["food"]) / caloriesPerItem);
+                    if (amountToConsume > maxAmountToConsume)
+                        amountToConsume = maxAmountToConsume;
+                }
+                else if (waterPerItem > 0)
+                {
+                    int maxAmountToConsume = 1 + (int)((100 - playerController["water"]) / waterPerItem);
+                    if (amountToConsume > maxAmountToConsume)
+                        amountToConsume = maxAmountToConsume;
+                }
+
+                if (amountToConsume > itemToConsume.Count)
+                    amountToConsume = itemToConsume.Count;
+
+                playerController["food"] += amountToConsume * caloriesPerItem;
+                playerController["water"] += amountToConsume * waterPerItem;
+                playerController["stamina"] += amountToConsume * GetStaminaModifier(itemToConsume);
+
+                itemToConsume.Count -= amountToConsume;
+                if (itemToConsume.Count <= 0)
+                {
+                    if (itemList != null && itemList.Contains(itemToConsume))
+                        itemList.Remove(itemToConsume);
+
+                    itemUI.RemoveItemNode(itemUI.CurrentID);
+                }
+
+                itemUI.Refresh();
+            }
+
+            public static void SetCurrentItem(StuffItem Item)
+            {
+                currentItem = Item;
+                inventoryEatObject.SetActive(IsFoodItem(Item));
+                storageEatObject.SetActive(IsFoodItem(Item));
+                refrigeratorEatObject.SetActive(IsFoodItem(Item));
+                inventoryDrinkObject.SetActive(IsDrinkItem(Item));
+                storageDrinkObject.SetActive(IsDrinkItem(Item));
+                refrigeratorDrinkObject.SetActive(IsDrinkItem(Item));
+            }         
+        }
+    }
 }

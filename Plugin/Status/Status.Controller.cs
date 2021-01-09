@@ -1,175 +1,180 @@
 ﻿using AIProject;
 using AIProject.Definitions;
-using System;
-using System.Collections.Generic;
+
 using System.Linq;
-using UnityEngine;
 
 namespace HardcoreMode
 {
-	public partial class HardcoreMode
-	{
-		static partial class Status
-		{
-			public static void Update()
-			{
-				if (playerController == null)
-					return;
+    public partial class HardcoreMode
+    {
+        static partial class Status
+        {
+            public static EnviroSky enviroSky;
+            private static float lastUpdateTime;
 
-				if (StatusKey.Value.IsDown())
-				{
-					visible = !visible;
-					playerController.statusHUD.SetVisibility(visible, PlayerDeath.Value, PlayerLife.Value);
+            public static void Initialize(EnviroSky sky)
+            {
+                enviroSky = sky;
+                lastUpdateTime = enviroSky.internalHour;
+            }
 
-					foreach (var controller in agentControllers.Where(n => n != null))
-						controller.statusHUD.SetVisibility(visible, AgentDeath.Value, AgentDeath.Value);
-				}
+            public static void Update()
+            {
+                if (!initialized || playerController == null)
+                    return;
 
-				float dt = (Time.deltaTime * 24f) / (60f * Manager.Map.Instance.EnvironmentProfile.DayLengthInMinute);
+                UpdateHUDVisibility();
+                UpdateLifeStats();
+                UpdatePlayerStatusWindow();
+                UpdateAgentStatusWindow();
+                UpdatePlayerHUD();
+                UpdateAgentHUDs();
+                UpdateWarnings();
+            }
 
-				foreach (var controller in agentControllers.Where(n => n != null))
-					Update_Agent(controller, dt);
+            static void UpdatePlayer(float hourDelta)
+            {
+                if (!PlayerStats.Value)
+                    return;
 
-				Update_Player(dt);
-				UpdatePlayerHUD();
-				UpdateAgentHUDs();
-				TryWarn();
-			}
+                bool allowPlayerDeath = PlayerDeath.Value;
 
-			static void Update_Player(float dt)
-			{
-				bool usePlayerStats = PlayerLife.Value;
-				bool allowPlayerDeath = PlayerDeath.Value;
+                if (playerController["food"] > 0f)
+                {
+                    playerController["food"] -= (5.357f * CalorieLoss.Value / CaloriePool.Value) * hourDelta / (Sleep.asleep ? 3 : 1);
+                }
+                else if (allowPlayerDeath && playerController["health"] > 0)
+                {
+                    playerController["health"] -= HealthLoss.Value * hourDelta;
 
-				if (playerController["food"] > 0f)
-				{
-					if (usePlayerStats)
-						playerController["food"] -= FoodLoss.Value * dt / (Sleep.asleep ? FoodLossSleepFactor.Value : 1);
-				}
-				else if (allowPlayerDeath && playerController["health"] > 0)
-				{
-					playerController["health"] -= HealthLoss.Value * dt;
+                    if (playerController["health"] == 0 && Permadeath.Value)
+                        TryDelete(Manager.Map.Instance.Player.ChaControl);
+                }
 
-					if (playerController["health"] == 0 && Permadeath.Value)
-						TryDelete(Manager.Map.Instance.Player.ChaControl);
-				}
+                if (playerController["water"] > 0f)
+                {
+                    playerController["water"] -= (5.357f * WaterLoss.Value / WaterPool.Value) * hourDelta / (Sleep.asleep ? 3 : 1);
+                }
+                else if (allowPlayerDeath && playerController["health"] > 0)
+                {
+                    playerController["health"] -= HealthLoss.Value * hourDelta;
 
-				if (Sleep.asleep)
-				{
-					float factor = dt;
+                    if (playerController["health"] == 0 && Permadeath.Value)
+                        TryDelete(Manager.Map.Instance.Player.ChaControl);
+                }
 
-					if (usePlayerStats)
-						playerController["stamina"] += StaminaRate.Value * factor;
+                if (Sleep.asleep)
+                {
+                    playerController["stamina"] += StaminaRate.Value * hourDelta;
 
-					if (allowPlayerDeath)
-						playerController["health"] += HealthRate.Value * factor;
-				}
-				else if (usePlayerStats)
-				{
-					playerController["stamina"] -= StaminaLoss.Value * dt;
-				}
-			}
+                    if (allowPlayerDeath)
+                        playerController["health"] += HealthRate.Value * hourDelta;
+                }
+                else
+                {
+                    playerController["stamina"] -= StaminaLoss.Value * hourDelta;
+                }
+            }
 
-			static void Update_Agent(LifeStatsController controller, float dt)
-			{
-				if (controller["health"] > 0)
-				{
-					if (AgentDeath.Value)
-					{
-						if (controller.agent.StateType == State.Type.Sleep || controller.agent.StateType == State.Type.Immobility)
-							controller["health"] += AgentHealthRate.Value * dt;
-						else if (controller.agent.StateType == State.Type.Collapse)
-							controller["health"] -= AgentHealthLoss.Value * dt;
+            static void UpdateAgent(LifeStatsController controller, float hourDelta)
+            {
+                if (controller["health"] > 0)
+                {
+                    if (AgentDeath.Value)
+                    {
+                        if (controller.agent.StateType == State.Type.Sleep || controller.agent.StateType == State.Type.Immobility)
+                            controller["health"] += AgentHealthRate.Value * hourDelta;
+                        else if (controller.agent.StateType == State.Type.Collapse)
+                            controller["health"] -= AgentHealthLoss.Value * hourDelta;
 
-						if (controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Hunger] < AgentLowFood.Value)
-							controller["health"] -= AgentHealthLossHunger.Value * dt;
+                        if (controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Hunger] < AgentLowFood.Value)
+                            controller["health"] -= AgentHealthLossHunger.Value * hourDelta;
 
-						if (controller.agent.AgentData.SickState.ID == Sickness.ColdID)
-							controller["health"] -= AgentHealthLossCold.Value * dt;
-						else if (controller.agent.AgentData.SickState.ID == Sickness.HeatStrokeID)
-							controller["health"] -= AgentHealthLossHeat.Value * dt;
-						else if (controller.agent.AgentData.SickState.ID == Sickness.HurtID)
-							controller["health"] -= AgentHealthLossHurt.Value * dt;
+                        var thirstLevel = 100 - controller.agent.AgentData.DesireTable[15];
+                        controller["water"] -= 5.357f * hourDelta;
+                        if (thirstLevel > 35 && controller["water"] < thirstLevel)
+                            controller["water"] = thirstLevel;
 
-						if (controller["health"] == 0)
-						{
-							if (Permadeath.Value)
-								TryDelete(controller.agent.ChaControl);
+                        if (controller["water"] < AgentLowWater.Value)
+                            controller["health"] -= AgentHealthLossThirst.Value * hourDelta;
 
-							if (AgentRevive.Value)
-								MapUIContainer.AddNotify($"{controller.agent.CharaName} is incapacitated.");
-							else
-								MapUIContainer.AddNotify($"{controller.agent.CharaName} died.");
-						}
-
-					}
-				}
-				else if (AgentRevive.Value && !Permadeath.Value)
-				{
-					controller["revive"] -= 100f * dt / 24f;
-
-					if (controller["revive"] == 0)
-					{
-						controller["revive", "food", "stamina", "health"] = 100f;
-
-						if (AgentReviveReset.Value)
-						{
-							List<int> keys = controller.ChaControl.fileGameInfo.flavorState.Keys.ToList();
-
-							foreach (int key in keys)
-								controller.agent.AgentData.SetFlavorSkill(key, 0);
-
-							controller.agent.SetPhase(0);
-
-							controller.ChaControl.fileGameInfo.lifestyle = -1;
-
-							List<int> skillKeys = controller.ChaControl.fileGameInfo.normalSkill.Keys.ToList();
-							foreach (int key in skillKeys)
-								controller.ChaControl.fileGameInfo.normalSkill.Remove(key);
-
-							List<int> hSkillKeys = controller.ChaControl.fileGameInfo.hSkill.Keys.ToList();
-							foreach (int key in hSkillKeys)
-								controller.ChaControl.fileGameInfo.hSkill.Remove(key);
-						}
-						else if (AgentRevivePenalty.Value)
+                        switch(controller.agent.AgentData.SickState.ID)
                         {
-							List<int> keys = controller.ChaControl.fileGameInfo.flavorState.Keys.ToList();
+                            case Sickness.ColdID: controller["health"] -= AgentHealthLossCold.Value * hourDelta; break;
+                            case Sickness.HeatStrokeID: controller["health"] -= AgentHealthLossHeat.Value * hourDelta; break;
+                            case Sickness.HurtID: controller["health"] -= AgentHealthLossHurt.Value * hourDelta; break;
+                            case Sickness.StomachacheID: controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Hunger] -= AgentFoodLossStomachache.Value * hourDelta; break;
+                            case Sickness.OverworkID: controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Physical] -= AgentStaminaLossOverwork.Value * hourDelta; break;
+                        }
 
-							foreach (int key in keys)
-							{
-								if (key == (int)FlavorSkill.Type.Wariness || key == (int)FlavorSkill.Type.Darkness)
-									controller.agent.AgentData.SetFlavorSkill(key, controller.agent.GetFlavorSkill(key) + 200);
-								else
-									controller.agent.AgentData.SetFlavorSkill(key, controller.agent.GetFlavorSkill(key) - 200);
-							}
+                        if (controller["health"] == 0)
+                        {
+                            if (Permadeath.Value)
+                                TryDelete(controller.agent.ChaControl);
 
-							int phase = controller.ChaControl.fileGameInfo.phase;
-							if (phase > 0)
-								controller.agent.SetPhase(phase - 1);
+                            if (AgentRevive.Value)
+                                MapUIContainer.AddNotify($"{controller.agent.CharaName} is incapacitated.");
+                            else
+                                MapUIContainer.AddNotify($"{controller.agent.CharaName} died.");
+                        }
+                    }
+                }
+                else if (AgentRevive.Value && !Permadeath.Value)
+                {
+                    controller["revive"] -= 100f * hourDelta / 24f;
 
-							if (phase <= 3)
-								controller.ChaControl.fileGameInfo.lifestyle = -1;
+                    if (controller["revive"] == 0)
+                    {
+                        controller["revive", "food", "stamina", "health"] = 100f;
 
-							List<int> skillKeys = controller.ChaControl.fileGameInfo.normalSkill.Keys.ToList();
+                        if (AgentReviveReset.Value)
+                            ResetAgentStats(controller);
+                        else if (AgentRevivePenalty.Value)
+                            PenalizeAgentStats(controller);
 
-							foreach (int key in skillKeys)
-                            {
-								if (UnityEngine.Random.Range(1, 100) <= 20)
-									controller.ChaControl.fileGameInfo.normalSkill.Remove(key);
-							}
+                        MapUIContainer.AddNotify($"{controller.agent.CharaName} has been revived.");
+                    }
+                }
+            }
 
-							List<int> hSkillKeys = controller.ChaControl.fileGameInfo.hSkill.Keys.ToList();
-							foreach (int key in hSkillKeys)
-							{
-								if (UnityEngine.Random.Range(1, 100) <= 20)
-									controller.ChaControl.fileGameInfo.hSkill.Remove(key);
-							}
-						}
+            static void UpdateLifeStats()
+            {
+                if (enviroSky == null || enviroSky.GameTime.ProgressTime == EnviroTime.TimeProgressMode.None)
+                    return;
 
-						MapUIContainer.AddNotify($"{controller.agent.CharaName} has been revived.");
-					}
-				}
-			}
-		}
-	}
+                float thisUpdateTime = enviroSky.internalHour;
+                float timeHourDelta = thisUpdateTime - lastUpdateTime;
+
+                if (thisUpdateTime < lastUpdateTime)
+                    timeHourDelta += 24;
+
+                if (timeHourDelta < 0.02)
+                    return;
+
+                lastUpdateTime = thisUpdateTime;
+
+                if (timeHourDelta > 1)
+                    return;
+
+                foreach (var controller in agentControllers.Where(n => n != null))
+                    UpdateAgent(controller, timeHourDelta);
+
+                UpdatePlayer(timeHourDelta);
+            }
+
+            static void UpdateHUDVisibility()
+            {
+
+                if (StatusKey.Value.IsDown())
+                {
+                    visibileHUD = !visibileHUD;
+
+                    playerController.statusHUD.SetVisible(visibileHUD, PlayerDeath.Value, PlayerStats.Value);
+
+                    foreach (var controller in agentControllers.Where(n => n != null))
+                        controller.statusHUD.SetVisible(visibileHUD, AgentDeath.Value, AgentDeath.Value);
+                }
+            }
+        }
+    }
 }

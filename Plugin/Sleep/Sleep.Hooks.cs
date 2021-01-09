@@ -5,88 +5,88 @@ using System;
 
 namespace HardcoreMode
 {
-	public partial class HardcoreMode
-	{
-		static bool sleepPatch = false;
+    public partial class HardcoreMode
+    {
+        static bool sleepPatch = false;
 
-		[HarmonyPrefix]
-		[HarmonyPatch(typeof(PlayerActor), "ElapseTime", typeof(Action), typeof(bool))]
-		public static bool Prefix_PlayerActor_ElapseTime(PlayerActor __instance,
-														 Action action,
-														 bool fadeOut = true)
-		{
-			__instance.ElapseTime(
-				() =>
-				{
-					action?.Invoke();
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PlayerActor), "ElapseTime", typeof(Action), typeof(bool))]
+        public static bool Prefix_PlayerActor_ElapseTime(PlayerActor __instance,
+                                                         Action action,
+                                                         bool fadeOut = true)
+        {
+            __instance.ElapseTime(
+                () =>
+                {
+                    action?.Invoke();
 
-					return true;
-				},
-				null
-			);
+                    return true;
+                },
+                null
+            );
 
-			return false;
-		}
+            return false;
+        }
 
-		[HarmonyPrefix]
-		[HarmonyPatch(typeof(PlayerActor), "ElapseTime", typeof(Func<bool>), typeof(Func<bool>))]
-		public static bool Prefix_PlayerActor_ElapseTime(PlayerActor __instance,
-														 Func<bool> conditionBefore,
-														 Func<bool> conditionAfter = null)
-		{
-			if (sleepPatch)
-			{
-				sleepPatch = false;
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PlayerActor), "ElapseTime", typeof(Func<bool>), typeof(Func<bool>))]
+        public static bool Prefix_PlayerActor_ElapseTime(PlayerActor __instance,
+                                                         Func<bool> conditionBefore,
+                                                         Func<bool> conditionAfter = null)
+        {
+            if (sleepPatch)
+            {
+                sleepPatch = false;
 
-				return true;
-			}
+                return true;
+            }
 
-			sleepPatch = true;
+            sleepPatch = true;
 
-			__instance.ElapseTime(
-				() =>
-				{
-					bool flag = true;
+            __instance.ElapseTime(
+                () =>
+                {
+                    bool flag = true;
 
-					if (conditionBefore != null)
-						flag = conditionBefore();
+                    if (conditionBefore != null)
+                        flag = conditionBefore();
 
-					if (flag)
-					{
-						Sleep.asleep = true;
+                    if (flag)
+                    {
+                        Sleep.asleep = true;
 
-						Sleep.SetSleepThresholds(Sleep.thresholdsNew);
-						Sleep.SetWakeTime();
-					}
+                        Sleep.SetSleepThresholds(Sleep.thresholdsNew);
+                        Sleep.SetWakeTime();
+                    }
 
-					return flag;
-				},
-				() =>
-				{
-					Sleep.asleep = false;
+                    return flag;
+                },
+                () =>
+                {
+                    Sleep.asleep = false;
 
-					Sleep.SetSleepThresholds(Sleep.thresholdsBackup);
-					Sleep.ResetWakeTime();
+                    Sleep.SetSleepThresholds(Sleep.thresholdsBackup);
+                    Sleep.ResetWakeTime();
 
-					if (conditionAfter != null)
-						return conditionAfter();
+                    if (conditionAfter != null)
+                        return conditionAfter();
 
-					return true;
-				}
-			);
+                    return true;
+                }
+            );
 
-			return false;
-		}
+            return false;
+        }
 
-		[HarmonyPrefix, HarmonyPatch(typeof(Map), "CanSleepInTime")]
-		public static bool Prefix_Map_CanSleepInTime(ref bool __result)
-		{
-			if (!SleepAnytime.Value)
-				return true;
+        [HarmonyPrefix, HarmonyPatch(typeof(Map), "CanSleepInTime")]
+        public static bool Prefix_Map_CanSleepInTime(ref bool __result)
+        {
+            if (!SleepAnytime.Value)
+                return true;
 
-			__result = true;
+            __result = true;
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }
