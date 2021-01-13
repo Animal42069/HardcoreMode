@@ -11,6 +11,7 @@ namespace HardcoreMode
         {
             public static EnviroSky enviroSky;
             private static float lastUpdateTime;
+            public static bool playerStatsLow = false;
 
             public static void Initialize(EnviroSky sky)
             {
@@ -74,6 +75,10 @@ namespace HardcoreMode
                 {
                     playerController["stamina"] -= StaminaLoss.Value * hourDelta;
                 }
+
+                playerStatsLow = playerController["food"] <= LowFood.Value ||
+                                 playerController["water"] <= LowWater.Value ||
+                                 playerController["stamina"] <= LowStamina.Value;
             }
 
             static void UpdateAgent(LifeStatsController controller, float hourDelta)

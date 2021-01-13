@@ -1,6 +1,7 @@
 ﻿using AIChara;
 using AIProject;
 using HarmonyLib;
+using System;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -10,47 +11,13 @@ namespace HardcoreMode
 {
     public partial class HardcoreMode
     {
-        static bool movePatch = false;
-
-        [HarmonyPrefix, HarmonyPatch(typeof(NavMeshAgent), "Move")]
-        public static bool Prefix_NavMeshAgent_Move(NavMeshAgent __instance, Vector3 offset)
+        [HarmonyPrefix, HarmonyPatch(typeof(Manager.Input), "IsDown", typeof(KeyCode))]
+        public static bool PrefixInputIsDown(KeyCode key, ref bool __result)
         {
-            if (!PlayerStats.Value || __instance != Manager.Map.Instance.Player.NavMeshAgent)
+            if (!Status.playerStatsLow || (key != KeyCode.LeftShift && key != KeyCode.RightShift))
                 return true;
 
-            if (movePatch)
-            {
-                movePatch = false;
-
-                return true;
-            }
-
-            bool flag =
-                playerController["food"] <= LowFood.Value ||
-                playerController["water"] <= LowWater.Value ||
-                playerController["stamina"] <= LowStamina.Value;
-
-            if (!flag ||
-                Input.GetKey(KeyCode.LeftShift) ||
-                Input.GetKey(KeyCode.RightShift))
-                return true;
-
-            movePatch = true;
-
-            LocomotionProfile.PlayerSpeedSetting speed =
-                Manager.Resources.Instance.LocomotionProfile.PlayerSpeed;
-            Vector3 platformVelocity = new Traverse(__instance).Field("platformVelocity").GetValue<Vector3>();
-
-            if (platformVelocity == null)
-                return true;
-
-            platformVelocity = new Vector3(platformVelocity.x, 0f, platformVelocity.z);
-
-            offset -= platformVelocity;
-            offset *= speed.walkSpeed / speed.normalSpeed;
-
-            __instance.Move(offset + platformVelocity);
-
+            __result = true;
             return false;
         }
 
