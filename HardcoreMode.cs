@@ -13,7 +13,7 @@ namespace HardcoreMode
     {
         const string GUID = "com.fairbair.hardcoremode";
         const string Name = "Hardcore Mode";
-        const string Version = "2.0.0";
+        const string Version = "2.0.1";
         const string BEHAVIOR = "HardcoreMode.LifeStats";
 
         const string SECTION_GENERAL = "General";
@@ -240,14 +240,14 @@ namespace HardcoreMode
             WaterLoss = Config.Bind(SECTION_LOSS, "Water Loss Per Day", 2000f, DESCRIPTION_WATER_LOSS);
 
             AgentLowFood = Config.Bind(SECTION_PENALTY, "Agent Low Food Threshold", 10f, new ConfigDescription(DESCRIPTION_AGENT_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
-            AgentHealthRate = Config.Bind(SECTION_RECOVER, "Agent Health Recovery (per Game-Hour)", 1f, DESCRIPTION_AGENT_HEALTH_RATE);
-            HealthRate = Config.Bind(SECTION_RECOVER, "Player Health Recovery (per Game-Hour)", 1f, DESCRIPTION_HEALTH_RATE);
+            AgentHealthRate = Config.Bind(SECTION_RECOVER, "Agent Health Recovery (per Game-Hour)", 3f, DESCRIPTION_AGENT_HEALTH_RATE);
+            HealthRate = Config.Bind(SECTION_RECOVER, "Player Health Recovery (per Game-Hour)", 3f, DESCRIPTION_HEALTH_RATE);
             StaminaRate = Config.Bind(SECTION_RECOVER, "Stamina Recovery (per Game-Hour)", 10f, new ConfigDescription(DESCRIPTION_STAMINA_RATE, new AcceptableValueRange<float>(0, 100)));
             CalorieRate = Config.Bind(SECTION_RECOVER, "Calorie Multiplier", 100f, new ConfigDescription(DESCRIPTION_CALORIE_RATE, new AcceptableValueRange<float>(0, 500)));
             WaterRate = Config.Bind(SECTION_RECOVER, "Water Multiplier", 100f, new ConfigDescription(DESCRIPTION_WATER_RATE, new AcceptableValueRange<float>(0, 500)));
 
-            AgentLowFood = Config.Bind(SECTION_PENALTY, "Agent Low Food Threshold", 10f, new ConfigDescription(DESCRIPTION_AGENT_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
-            AgentLowWater = Config.Bind(SECTION_PENALTY, "Agent Low Water Threshold", 10f, new ConfigDescription(DESCRIPTION_AGENT_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
+            AgentLowFood = Config.Bind(SECTION_PENALTY, "Agent Low Food Threshold", 0f, new ConfigDescription(DESCRIPTION_AGENT_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
+            AgentLowWater = Config.Bind(SECTION_PENALTY, "Agent Low Water Threshold", 0f, new ConfigDescription(DESCRIPTION_AGENT_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
             LowFood = Config.Bind(SECTION_PENALTY, "Low Food Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
             LowWater = Config.Bind(SECTION_PENALTY, "Low Water Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
 
@@ -255,8 +255,7 @@ namespace HardcoreMode
             AgentReviveReset = Config.Bind(SECTION_PENALTY, "Agent Revive Reset", false, DESCRIPTION_AGENT_REVIVE_RESET);
             AgentRevivePenalty = Config.Bind(SECTION_PENALTY, "Agent Revive Penalty", true, DESCRIPTION_AGENT_REVIVE_PENALTY);
             Permadeath = Config.Bind(SECTION_PENALTY, "Permadeath", false, DESCRIPTION_PERMADEATH);
-            PlayerDeathReset = Config.Bind(SECTION_PENALTY, "Player Death Agent Reset", true, DESCRIPTION_PLAYER_DEATH_RESET);
-            
+            PlayerDeathReset = Config.Bind(SECTION_PENALTY, "Player Death Agent Reset", true, DESCRIPTION_PLAYER_DEATH_RESET);          
 
             HealthWarn = Config.Bind(SECTION_WARN, "Health Warning", 30, new ConfigDescription(DESCRIPTION_HEALTH_WARN, new AcceptableValueRange<int>(0, 100)));
             AgentWarn = Config.Bind(SECTION_WARN, "Agent Health Warning", 30, new ConfigDescription(DESCRIPTION_AGENT_WARN, new AcceptableValueRange<int>(0, 100)));

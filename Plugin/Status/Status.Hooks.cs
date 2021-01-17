@@ -1,11 +1,8 @@
 ﻿using AIChara;
-using AIProject;
 using HarmonyLib;
-using System;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace HardcoreMode
 {
@@ -57,9 +54,9 @@ namespace HardcoreMode
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(EnviroSky), "AssignAndStart")]
-        private static void EnviroSky_AssignAndStart(EnviroSky __instance)
+        public static void EnviroSky_AssignAndStart(EnviroSky __instance)
         {
-            Status.enviroSky = __instance;
+            Status.InitializeTime(__instance);
         }
 
     }

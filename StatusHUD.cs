@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,42 +22,51 @@ namespace HardcoreMode
             if (commandCanvas == null)
                 return;
 
-            statusHUD = new GameObject { name = "HardcoreHUD" };
-            statusHUD.transform.SetParent(commandCanvas.transform);
-            statusHUD.transform.localScale = new Vector3(1, 1, 1);
-            statusHUD.transform.localPosition = position;
+            try
+            {
+                statusHUD = new GameObject { name = "HardcoreHUD" };
+                statusHUD.transform.SetParent(commandCanvas.transform);
+                statusHUD.transform.localScale = new Vector3(1, 1, 1);
+                statusHUD.transform.localPosition = position;
 
-            var healthBarObject = CreateStatusBar("HealthBar", new Vector3(0, 0, 0), statusHUD.transform);
-            healthBarGuage = healthBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("HealthBar")).FirstOrDefault();
-            healthBarGuage.color = new Color(1, 0, 0, 0.5f);
+                var healthBarObject = CreateStatusBar("HealthBar", new Vector3(0, 0, 0), statusHUD.transform);
+                healthBarGuage = healthBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("HealthBar")).FirstOrDefault();
+                healthBarGuage.color = new Color(1, 0, 0, 0.5f);
 
-            var staminaBarObject = CreateStatusBar("StaminaBar", new Vector3(0, -25, 0), statusHUD.transform);
-            staminaBarGuage = staminaBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("StaminaBar")).FirstOrDefault();
-            staminaBarGuage.color = new Color(1, 1, 0, 0.5f);
+                var staminaBarObject = CreateStatusBar("StaminaBar", new Vector3(0, -25, 0), statusHUD.transform);
+                staminaBarGuage = staminaBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("StaminaBar")).FirstOrDefault();
+                staminaBarGuage.color = new Color(1, 1, 0, 0.5f);
 
-            var foodBarObject = CreateStatusBar("FoodBar", new Vector3(90, -50, 0), statusHUD.transform);
-            foodBarObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("FoodBar")).FirstOrDefault().sizeDelta = new Vector2(95, 25);
-            foodBarGuage = foodBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("FoodBar")).FirstOrDefault();
-            foodBarGuage.color = new Color(0, 1, 0, 0.5f);
+                var foodBarObject = CreateStatusBar("FoodBar", new Vector3(90, -50, 0), statusHUD.transform);
+                foodBarObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("FoodBar")).FirstOrDefault().sizeDelta = new Vector2(95, 25);
+                foodBarGuage = foodBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("FoodBar")).FirstOrDefault();
+                foodBarGuage.color = new Color(0, 1, 0, 0.5f);
 
-            var waterBarObject = CreateStatusBar("WaterBar", new Vector3(0, -50, 0), statusHUD.transform);
-            waterBarObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("WaterBar")).FirstOrDefault().sizeDelta = new Vector2(95, 25);
-            waterBarGuage = waterBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("WaterBar")).FirstOrDefault();
-            waterBarGuage.color = new Color(0, 0, 1, 0.5f);
+                var waterBarObject = CreateStatusBar("WaterBar", new Vector3(0, -50, 0), statusHUD.transform);
+                waterBarObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("WaterBar")).FirstOrDefault().sizeDelta = new Vector2(95, 25);
+                waterBarGuage = waterBarObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("WaterBar")).FirstOrDefault();
+                waterBarGuage.color = new Color(0, 0, 1, 0.5f);
 
 
-            if (healthBarGuage != null && staminaBarGuage != null && foodBarGuage != null && waterBarGuage != null)
-                initialized = true;
+                if (healthBarGuage != null && staminaBarGuage != null && foodBarGuage != null && waterBarGuage != null)
+                    initialized = true;
 
-            var textObject = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/Name/NameLabel");
-            var AgentName = Object.Instantiate(textObject);
-            AgentName.transform.SetParent(healthBarObject.transform);
-            AgentName.name = "AgentName";
-            AgentName.transform.localPosition = new Vector3(92.5f, 2.5f, 0f);
-            AgentName.transform.localScale = new Vector3(0.75f, 0.75f, 1);
-            AgentName.GetComponentsInChildren<Text>(true).FirstOrDefault().text = characterName;
-            AgentName.GetComponentsInChildren<Text>(true).FirstOrDefault().color = Color.black;
-            AgentName.GetComponentsInChildren<RectTransform>(true).FirstOrDefault().sizeDelta = new Vector2(180f, 20f);
+                var textObject = GameObject.Find("MapScene/MapUI(Clone)/CommandCanvas/MenuUI(Clone)/CellularUI/Interface Panel/StatusUI(Clone)/Content/Name/NameLabel");
+                var AgentName = UnityEngine.Object.Instantiate(textObject);
+                AgentName.transform.SetParent(healthBarObject.transform);
+                AgentName.name = "AgentName";
+                AgentName.transform.localPosition = new Vector3(92.5f, 2.5f, 0f);
+                AgentName.transform.localScale = new Vector3(0.75f, 0.75f, 1);
+                AgentName.GetComponentsInChildren<Text>(true).FirstOrDefault().text = characterName;
+                AgentName.GetComponentsInChildren<Text>(true).FirstOrDefault().color = Color.black;
+                AgentName.GetComponentsInChildren<RectTransform>(true).FirstOrDefault().sizeDelta = new Vector2(180f, 20f);
+            }
+            catch
+            {
+                Console.WriteLine($"Hardcore Mode Failed to Initialze HUD for {characterName}");
+                Destroy();
+                initialized = false;
+            }
         }
 
         public void SetPosition(Vector3 position)
@@ -109,7 +119,7 @@ namespace HardcoreMode
             if (statusGuage == null)
                 return new GameObject();
 
-            GameObject statusBar = Object.Instantiate(statusGuage);
+            GameObject statusBar = UnityEngine.Object.Instantiate(statusGuage);
             statusBar.transform.SetParent(parent);
             statusBar.name = statusBarName;
             statusBar.transform.localPosition = localPosition;

@@ -70,6 +70,7 @@ namespace HardcoreMode
                 statusHUD = new StatusHUD("", new Vector3(-950, 515, 0));
             else
                 statusHUD = new StatusHUD(ChaControl.fileParam.fullname, new Vector3(-950, 425, 0));
+
             HardcoreMode.AddController(this);
         }
 
