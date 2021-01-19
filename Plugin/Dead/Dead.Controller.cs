@@ -17,7 +17,7 @@ namespace HardcoreMode
                 if (playerController == null)
                     return;
 
-                if (PlayerDeath.Value && playerController["health"] == 0)
+                if (PlayerDeath.Value != DeathType.None && playerController["health"] == 0)
                 {
                     if (MapUIContainer.AnyUIActive())
                         debounce = 1f;

@@ -13,7 +13,7 @@ namespace HardcoreMode
     {
         const string GUID = "com.fairbair.hardcoremode";
         const string Name = "Hardcore Mode";
-        const string Version = "2.0.1";
+        const string Version = "2.0.2";
         const string BEHAVIOR = "HardcoreMode.LifeStats";
 
         const string SECTION_GENERAL = "General";
@@ -28,15 +28,15 @@ namespace HardcoreMode
             "This enables the player survival stats. " +
             "Does not include the 'Health' stat.";
         const string DESCRIPTION_PLAYER_DEATH =
-            "Enables the player's health stat and allows the player to die. " +
-            "The player is permanently dead and you will have to change characters. " +
-            "You can revive the dead character by loading them as an agent.";
+            "Contols what happens when an agent dies. " +
+            "Incapacitated player can recover but loses items, equipment, and stats. " +
+            "Dead player will be permanently collapsed and must be swapped out. " +
+            "PermaDeath player will also have their character card deleted. ";
         const string DESCRIPTION_AGENT_DEATH =
-            "Enables the agent's health stat and allows the agents to die. " +
-            "When dead, the agent is permanently collapsed.";
-        const string DESCRIPTION_AGENT_REVIVE =
-            "Allows the agents to revive from death after 1 in-game day. " +
-            "Revival is halted when this is disabled.";
+            "Contols what happens when an agent dies. " +
+            "Incapacitated agents will recover after 1 day of bed rest. " +
+            "Dead agents will be permanently collapsed and must be swapped out. " +
+            "PermaDeath agents will also have their character cards deleted. ";
 
         const string DESCRIPTION_SET_HOURS_ASLEEP =
             "Allows you to set the total number of hours asleep. " +
@@ -93,26 +93,26 @@ namespace HardcoreMode
             "The number of milliliters of water the player loses per day.";
 
         const string DESCRIPTION_AGENT_HEALTH_RATE =
-            "How much health is recovered overtime when an agent sleeps? " +
+            "How much health is recovered overtime, value is tripled when an agent sleeps" +
             "Interval is in in-game hours.";
         const string DESCRIPTION_HEALTH_RATE =
-            "How much health is recovered overtime when the player sleeps? " +
+            "How much health is recovered overtime, value is tripled when the player sleeps" +
             "Interval is in in-game hours.";
         const string DESCRIPTION_STAMINA_RATE =
             "How much stamina is recovered overtime when the player sleeps? " +
             "100% means they recover 100% of their stamina per minute. " +
             "Interval is in in-game hours.";
-        const string DESCRIPTION_CALORIE_RATE =
-            "How many calories are replenished by food." +
-            "100 means they gain 100% of the food's calories.";
-        const string DESCRIPTION_WATER_RATE =
-            "How much water is replenished by food/drinks." +
-            "100 means they gain 100% of the item's amount.";
+        const string DESCRIPTION_FOOD_EFFICIENCY =
+            "How much food to recover when eating/drinking" +
+            "100 means you gain 100% of the food's calories.";
+        const string DESCRIPTION_WATER_EFFICIENCY =
+            "How much water to recover when eating/drinking" +
+            "100 means you gain 100% of the item's amount.";
 
         const string DESCRIPTION_AGENT_LOW_FOOD =
-            "Hunger value when agent will begin to lose health due to hunger.";
+            "Food value when agent will begin to lose health due to hunger.";
         const string DESCRIPTION_AGENT_LOW_WATER =
-            "Thirst value when agent will begin to lose health due to thirst.";
+            "Water value when agent will begin to lose health due to thirst.";
         const string DESCRIPTION_LOW_FOOD =
             "Having your food below or equal to this value will force you to walk.";
         const string DESCRIPTION_LOW_WATER =
@@ -121,15 +121,11 @@ namespace HardcoreMode
             "Having your stamina below or equal to this value will force you to walk.";
         const string DESCRIPTION_PLAYER_DEATH_RESET =
             "When enabled, if the player dies all agents stats reset to 0, hearts to 1 and lose all skills.";
-        const string DESCRIPTION_AGENT_REVIVE_RESET =
-            "When enabled, this will reset their stats to 0, hearts to 1 and lose all skills when they revive.";
         const string DESCRIPTION_AGENT_REVIVE_PENALTY =
-            "When enabled, this will increase darkness and wariness by 200, decrease all other stats by 200 " +
-            "Reduce hearts by 1 level, and randomly lose skills";
-        const string DESCRIPTION_PERMADEATH =
-            "When enabled, dying will DELETE the card. " +
-            "This includes both the player character and the agent. " +
-            "Cards that are deleted WILL NOT be sent to the recycle bin.";
+            "What type of penalty should be applied when the agent dies?" +
+            "Stat Loss will increase darkness and wariness by 200, decrease all other stats by 200 " +
+            "Reduce hearts by 1 level, and randomly lose skills" +
+            "Stat Reset will reset their stats to 0, hearts to 1 and lose all skills.";
 
         const string DESCRIPTION_HEALTH_WARN =
             "The game warns you if your health falls below or equal to this value.";
@@ -142,14 +138,28 @@ namespace HardcoreMode
         const string DESCRIPTION_STAMINA_WARN =
             "The game warns you if your stamina falls below or equal to this value.";
 
+        public enum RevivePenalty
+        {
+            None,
+            StatLoss,
+            StatReset
+        }
+
+        public enum DeathType
+        {
+            None,
+            Incapacitated,
+            Dead,
+            PermaDeath
+        }
+
         internal static ConfigEntry<int> WindowIDSleep { get; set; }
         internal static ConfigEntry<int> WindowIDDead { get; set; }
 
         internal static ConfigEntry<KeyboardShortcut> StatusKey { get; set; }
         internal static ConfigEntry<bool> PlayerStats { get; set; }
-        internal static ConfigEntry<bool> PlayerDeath { get; set; }
-        internal static ConfigEntry<bool> AgentDeath { get; set; }
-        internal static ConfigEntry<bool> AgentRevive { get; set; }
+        internal static ConfigEntry<DeathType> PlayerDeath { get; set; }
+        internal static ConfigEntry<DeathType> AgentDeath { get; set; }
 
         internal static ConfigEntry<bool> SleepAnytime { get; set; }
         internal static ConfigEntry<bool> SetHoursAsleep { get; set; }
@@ -174,20 +184,17 @@ namespace HardcoreMode
         internal static ConfigEntry<float> AgentHealthRate { get; set; }
         internal static ConfigEntry<float> HealthRate { get; set; }
         internal static ConfigEntry<float> StaminaRate { get; set; }
-        internal static ConfigEntry<float> CalorieRate { get; set; }
-        internal static ConfigEntry<float> WaterRate { get; set; }
+        internal static ConfigEntry<float> CalorieEfficiency { get; set; }
+        internal static ConfigEntry<float> WaterEfficiency { get; set; }
 
         internal static ConfigEntry<float> AgentLowFood { get; set; }
         internal static ConfigEntry<float> AgentLowWater { get; set; }
         internal static ConfigEntry<float> LowFood { get; set; }
         internal static ConfigEntry<float> LowWater { get; set; }
         internal static ConfigEntry<float> LowStamina { get; set; }
-        internal static ConfigEntry<bool> AgentReviveReset { get; set; }
-        internal static ConfigEntry<bool> AgentRevivePenalty { get; set; }
-        internal static ConfigEntry<bool> Permadeath { get; set; }
+        internal static ConfigEntry<RevivePenalty> AgentRevivePenalty { get; set; }
         internal static ConfigEntry<bool> PlayerDeathReset { get; set; }
-
-        
+     
         internal static ConfigEntry<int> HealthWarn { get; set; }
         internal static ConfigEntry<int> AgentWarn { get; set; }
         internal static ConfigEntry<int> FoodWarn { get; set; }
@@ -202,23 +209,22 @@ namespace HardcoreMode
             StatusKey = Config.Bind(SECTION_SURVIVAL, "Status UI Key", new KeyboardShortcut(KeyCode.T));
             (PlayerStats = Config.Bind(SECTION_SURVIVAL, "Player Life Stats", true, DESCRIPTION_PLAYER_LIFE)).SettingChanged += (s, e) =>
             {
-                playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value, PlayerStats.Value);
-                Status.UpdateCellPhoneVisibility(PlayerDeath.Value, PlayerStats.Value, AgentDeath.Value);
+                playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value != DeathType.None, PlayerStats.Value);
+                Status.UpdateCellPhoneVisibility(PlayerDeath.Value != DeathType.None, PlayerStats.Value, AgentDeath.Value != DeathType.None);
             };
-            (PlayerDeath = Config.Bind(SECTION_SURVIVAL, "Player Death", true, DESCRIPTION_PLAYER_DEATH)).SettingChanged += (s, e) =>
+            (PlayerDeath = Config.Bind(SECTION_SURVIVAL, "Player Death", DeathType.Incapacitated, DESCRIPTION_PLAYER_DEATH)).SettingChanged += (s, e) =>
             {
-                playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value, PlayerStats.Value);
-                Status.UpdateCellPhoneVisibility(PlayerDeath.Value, PlayerStats.Value, AgentDeath.Value);
+                playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value != DeathType.None, PlayerStats.Value);
+                Status.UpdateCellPhoneVisibility(PlayerDeath.Value != DeathType.None, PlayerStats.Value, AgentDeath.Value != DeathType.None);
             };
-            (AgentDeath = Config.Bind(SECTION_SURVIVAL, "Agent Death", true, DESCRIPTION_AGENT_DEATH)).SettingChanged += (s, e) =>
+            (AgentDeath = Config.Bind(SECTION_SURVIVAL, "Agent Death", DeathType.Incapacitated, DESCRIPTION_AGENT_DEATH)).SettingChanged += (s, e) =>
             {
                 foreach (var controller in agentControllers.Where(n => n != null))
-                    controller.statusHUD.SetVisible(Status.visibileHUD, AgentDeath.Value, AgentDeath.Value);
+                    controller.statusHUD.SetVisible(Status.visibileHUD, AgentDeath.Value != DeathType.None, AgentDeath.Value != DeathType.None);
 
-                Status.UpdateCellPhoneVisibility(PlayerDeath.Value, PlayerStats.Value, AgentDeath.Value);
+                Status.UpdateCellPhoneVisibility(PlayerDeath.Value != DeathType.None, PlayerStats.Value, AgentDeath.Value != DeathType.None);
             };
 
-            AgentRevive = Config.Bind(SECTION_SURVIVAL, "Agent Revival", true, DESCRIPTION_AGENT_REVIVE);
             SleepAnytime = Config.Bind(SECTION_SLEEP, "Sleep Anytime", true);
             SetHoursAsleep = Config.Bind(SECTION_SLEEP, "Set Hours Asleep", true, DESCRIPTION_SET_HOURS_ASLEEP);
             WakeHour = Config.Bind(SECTION_SLEEP, "Wake Up Hour", 8, new ConfigDescription(DESCRIPTION_WAKE_HOUR, new AcceptableValueRange<int>(0, 23)));
@@ -232,29 +238,25 @@ namespace HardcoreMode
             AgentFoodLossStomachache = Config.Bind(SECTION_LOSS, "Agent Food Loss - Stomachache", 2f, new ConfigDescription(DESCRIPTION_AGENT_FOOD_LOSS_STOMACHACHE, new AcceptableValueRange<float>(0, 100)));
             AgentStaminaLossOverwork = Config.Bind(SECTION_LOSS, "Agent Stamina Loss - Overwork", 4f, new ConfigDescription(DESCRIPTION_AGENT_STAMINA_LOSS_OVERWORK, new AcceptableValueRange<float>(0, 100)));
 
-            HealthLoss = Config.Bind(SECTION_LOSS, "Health Loss", 2.5f, new ConfigDescription(DESCRIPTION_HEALTH_LOSS, new AcceptableValueRange<float>(0, 100)));
-            StaminaLoss = Config.Bind(SECTION_LOSS, "Stamina Loss", 4f, new ConfigDescription(DESCRIPTION_STAMINA_LOSS, new AcceptableValueRange<float>(0, 100)));
-            CaloriePool = Config.Bind(SECTION_LOSS, "Calorie Pool", 7500f, new ConfigDescription(DESCRIPTION_CALORIE_POOL, new AcceptableValueRange<float>(2500, 25000)));
-            CalorieLoss = Config.Bind(SECTION_LOSS, "Calorie Loss Per Day", 2500f, DESCRIPTION_CALORIE_LOSS);
-            WaterPool = Config.Bind(SECTION_LOSS, "Water Pool", 4000f, new ConfigDescription(DESCRIPTION_WATER_POOL, new AcceptableValueRange<float>(2000, 20000)));
-            WaterLoss = Config.Bind(SECTION_LOSS, "Water Loss Per Day", 2000f, DESCRIPTION_WATER_LOSS);
+            HealthLoss = Config.Bind(SECTION_LOSS, "Player Health Loss", 2.5f, new ConfigDescription(DESCRIPTION_HEALTH_LOSS, new AcceptableValueRange<float>(0, 100)));
+            StaminaLoss = Config.Bind(SECTION_LOSS, "Player Stamina Loss", 4f, new ConfigDescription(DESCRIPTION_STAMINA_LOSS, new AcceptableValueRange<float>(0, 100)));
+            CaloriePool = Config.Bind(SECTION_LOSS, "Player Calorie Pool", 7500f, new ConfigDescription(DESCRIPTION_CALORIE_POOL, new AcceptableValueRange<float>(2500, 25000)));
+            CalorieLoss = Config.Bind(SECTION_LOSS, "Player Calorie Loss Per Day", 2500f, new ConfigDescription(DESCRIPTION_CALORIE_LOSS, new AcceptableValueRange<float>(0, 10000)));
+            WaterPool = Config.Bind(SECTION_LOSS, "Player Water Pool", 4000f, new ConfigDescription(DESCRIPTION_WATER_POOL, new AcceptableValueRange<float>(2000, 20000)));
+            WaterLoss = Config.Bind(SECTION_LOSS, "Player Water Loss Per Day", 2000f, new ConfigDescription(DESCRIPTION_WATER_LOSS, new AcceptableValueRange<float>(0, 8000)));
 
-            AgentLowFood = Config.Bind(SECTION_PENALTY, "Agent Low Food Threshold", 10f, new ConfigDescription(DESCRIPTION_AGENT_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
-            AgentHealthRate = Config.Bind(SECTION_RECOVER, "Agent Health Recovery (per Game-Hour)", 3f, DESCRIPTION_AGENT_HEALTH_RATE);
-            HealthRate = Config.Bind(SECTION_RECOVER, "Player Health Recovery (per Game-Hour)", 3f, DESCRIPTION_HEALTH_RATE);
-            StaminaRate = Config.Bind(SECTION_RECOVER, "Stamina Recovery (per Game-Hour)", 10f, new ConfigDescription(DESCRIPTION_STAMINA_RATE, new AcceptableValueRange<float>(0, 100)));
-            CalorieRate = Config.Bind(SECTION_RECOVER, "Calorie Multiplier", 100f, new ConfigDescription(DESCRIPTION_CALORIE_RATE, new AcceptableValueRange<float>(0, 500)));
-            WaterRate = Config.Bind(SECTION_RECOVER, "Water Multiplier", 100f, new ConfigDescription(DESCRIPTION_WATER_RATE, new AcceptableValueRange<float>(0, 500)));
+            AgentHealthRate = Config.Bind(SECTION_RECOVER, "Agent Health Recovery (per Game-Hour)", 1f, new ConfigDescription(DESCRIPTION_AGENT_HEALTH_RATE, new AcceptableValueRange<float>(0, 100)));
+            HealthRate = Config.Bind(SECTION_RECOVER, "Player Health Recovery (per Game-Hour)", 1f, new ConfigDescription(DESCRIPTION_HEALTH_RATE, new AcceptableValueRange<float>(0, 100)));
+            StaminaRate = Config.Bind(SECTION_RECOVER, "Player Stamina Recovery (per Game-Hour)", 10f, new ConfigDescription(DESCRIPTION_STAMINA_RATE, new AcceptableValueRange<float>(0, 100)));
+            CalorieEfficiency = Config.Bind(SECTION_RECOVER, "Restore Food Efficiency", 100f, new ConfigDescription(DESCRIPTION_FOOD_EFFICIENCY, new AcceptableValueRange<float>(0, 500)));
+            WaterEfficiency = Config.Bind(SECTION_RECOVER, "Restore Water Efficiency", 100f, new ConfigDescription(DESCRIPTION_WATER_EFFICIENCY, new AcceptableValueRange<float>(0, 500)));
 
             AgentLowFood = Config.Bind(SECTION_PENALTY, "Agent Low Food Threshold", 0f, new ConfigDescription(DESCRIPTION_AGENT_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
             AgentLowWater = Config.Bind(SECTION_PENALTY, "Agent Low Water Threshold", 0f, new ConfigDescription(DESCRIPTION_AGENT_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
-            LowFood = Config.Bind(SECTION_PENALTY, "Low Food Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
-            LowWater = Config.Bind(SECTION_PENALTY, "Low Water Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
-
-            LowStamina = Config.Bind(SECTION_PENALTY, "Low Stamina Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_STAMINA, new AcceptableValueRange<float>(0, 100)));
-            AgentReviveReset = Config.Bind(SECTION_PENALTY, "Agent Revive Reset", false, DESCRIPTION_AGENT_REVIVE_RESET);
-            AgentRevivePenalty = Config.Bind(SECTION_PENALTY, "Agent Revive Penalty", true, DESCRIPTION_AGENT_REVIVE_PENALTY);
-            Permadeath = Config.Bind(SECTION_PENALTY, "Permadeath", false, DESCRIPTION_PERMADEATH);
+            LowFood = Config.Bind(SECTION_PENALTY, "Player Low Food Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_FOOD, new AcceptableValueRange<float>(0, 100)));
+            LowWater = Config.Bind(SECTION_PENALTY, "Player Low Water Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_WATER, new AcceptableValueRange<float>(0, 100)));
+            LowStamina = Config.Bind(SECTION_PENALTY, "Player Low Stamina Threshold", 0f, new ConfigDescription(DESCRIPTION_LOW_STAMINA, new AcceptableValueRange<float>(0, 100)));
+            AgentRevivePenalty = Config.Bind(SECTION_PENALTY, "Agent Revive Penalty", RevivePenalty.StatLoss, DESCRIPTION_AGENT_REVIVE_PENALTY);
             PlayerDeathReset = Config.Bind(SECTION_PENALTY, "Player Death Agent Reset", true, DESCRIPTION_PLAYER_DEATH_RESET);          
 
             HealthWarn = Config.Bind(SECTION_WARN, "Health Warning", 30, new ConfigDescription(DESCRIPTION_HEALTH_WARN, new AcceptableValueRange<int>(0, 100)));

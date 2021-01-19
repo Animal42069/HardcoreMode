@@ -85,6 +85,10 @@
       <HintPath>packages\IllusionLibs.AIGirl.UnityEngine.AIModule.2018.2.21.3\lib\net46\UnityEngine.AIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\IllusionLibs.AIGirl.UnityEngine.AnimationModule.2018.2.21.3\lib\net46\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\lib\net46\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
@@ -148,6 +152,7 @@
     <Error Condition="!Exists('packages\IllusionLibs.AIGirl.UnityEngine.AIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\IllusionLibs.AIGirl.UnityEngine.AIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AIModule.targets'))" />
     <Error Condition="!Exists('packages\IllusionLibs.AIGirl.UnityEngine.UI.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UI.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\IllusionLibs.AIGirl.UnityEngine.UI.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UI.targets'))" />
     <Error Condition="!Exists('packages\IllusionLibs.AIGirl.UnityEngine.UIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\IllusionLibs.AIGirl.UnityEngine.UIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UIModule.targets'))" />
+    <Error Condition="!Exists('packages\IllusionLibs.AIGirl.UnityEngine.AnimationModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AnimationModule.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\IllusionLibs.AIGirl.UnityEngine.AnimationModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AnimationModule.targets'))" />
   </Target>
   <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets')" />
   <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.TextRenderingModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.TextRenderingModule.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.TextRenderingModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.TextRenderingModule.targets')" />
@@ -158,4 +163,5 @@
   <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.AIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AIModule.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.AIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AIModule.targets')" />
   <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.UI.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UI.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.UI.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UI.targets')" />
   <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.UIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UIModule.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.UIModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.UIModule.targets')" />
+  <Import Project="packages\IllusionLibs.AIGirl.UnityEngine.AnimationModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AnimationModule.targets" Condition="Exists('packages\IllusionLibs.AIGirl.UnityEngine.AnimationModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AnimationModule.targets')" />
 </Project>

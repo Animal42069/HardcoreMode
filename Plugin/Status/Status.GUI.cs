@@ -37,11 +37,11 @@ namespace HardcoreMode
                 try
                 {
                     playerContentUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("SexLabel")).FirstOrDefault().localPosition = new Vector3(-270, -440, 0);
-                    var genderText = playerContentUI.GetComponentsInChildren<Text>(true).Where(x => x.text.Contains("Gender") || x.text.Contains("Sex") || x.text.Contains("性別")).FirstOrDefault();
-                    if (genderText != null)
+                    var genderTransform = playerContentUI.GetComponentsInChildren<Transform>(true).Where(x => x.localPosition.x < -30 && x.localPosition.y > -20).FirstOrDefault();
+                    if (genderTransform != null)
                     {
-                        genderText.rectTransform.localPosition = new Vector3(-290, -390, 0);
-                        genderText.rectTransform.sizeDelta = new Vector3(120, 50, 0);
+                        genderTransform.GetComponent<RectTransform>().localPosition = new Vector3(-290, -390, 0);
+                        genderTransform.GetComponent<RectTransform>().sizeDelta = new Vector3(120, 50, 0);
                     }
                     agentContentUI.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Motivation")).FirstOrDefault().GetComponentsInChildren<Text>(true).Where(x => x.name.Contains("Text")).FirstOrDefault().rectTransform.sizeDelta = new Vector3(120, 40, 0);
                     agentContentUI.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("Sick")).FirstOrDefault().localPosition = new Vector3(-290, -390, 0);
@@ -115,7 +115,7 @@ namespace HardcoreMode
 
                     initialized = true;
 
-                    UpdateCellPhoneVisibility(PlayerDeath.Value, PlayerStats.Value, AgentDeath.Value);
+                    UpdateCellPhoneVisibility(PlayerDeath.Value != DeathType.None, PlayerStats.Value, AgentDeath.Value != DeathType.None);
                 }
                 catch
                 {
@@ -166,7 +166,8 @@ namespace HardcoreMode
                         controller.statusHUD.Update(controller["health"],
                             controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Physical],
                             controller.agent.AgentData.StatsTable[(int)AIProject.Definitions.Status.Type.Hunger],
-                            controller["water"]);
+                            controller["water"],
+                            controller["revive"]);
                     }
                 }
             }

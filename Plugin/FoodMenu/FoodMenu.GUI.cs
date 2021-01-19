@@ -3,7 +3,6 @@ using AIProject.SaveData;
 using Manager;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 namespace HardcoreMode
 {
@@ -110,8 +109,8 @@ namespace HardcoreMode
                 if (amountToConsume <= 0 || itemUI == null)
                     return;
 
-                float caloriesPerItem = GetCalories(itemToConsume) * CalorieRate.Value / CaloriePool.Value;
-                float waterPerItem = GetWaterContent(itemToConsume) * WaterRate.Value / WaterPool.Value;
+                float caloriesPerItem = GetCalories(itemToConsume) * CalorieEfficiency.Value / CaloriePool.Value;
+                float waterPerItem = GetWaterContent(itemToConsume) * WaterEfficiency.Value / WaterPool.Value;
                 if (caloriesPerItem > 0)
                 {
                     int maxAmountToConsume = 1 + (int)((100 - playerController["food"]) / caloriesPerItem);

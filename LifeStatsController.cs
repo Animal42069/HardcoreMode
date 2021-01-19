@@ -84,12 +84,24 @@ namespace HardcoreMode
 
         protected void LateUpdate()
         {
-            if (HardcoreMode.AgentDeath.Value &&
-                agent != null &&
-                stats["health"] == 0 &&
-                agent.StateType != State.Type.Collapse &&
+            if (HardcoreMode.AgentDeath.Value == HardcoreMode.DeathType.None ||
+                agent == null || !stats.ContainsKey("health") || stats["health"] != 0)
+                return;
+
+            if (agent.StateType != State.Type.Collapse &&
                 agent.StateType != State.Type.Immobility)
                 agent.StartWeakness();
+
+            if (HardcoreMode.AgentDeath.Value == HardcoreMode.DeathType.Incapacitated || agent.Mode == Desire.ActionType.Onbu)
+            {
+                ChaControl.animBody.speed = 1;
+                ChaControl.GetComponentInChildren<FaceBlendShape>(true).enabled = true;
+            }
+            else
+            {
+                ChaControl.animBody.speed = 0;
+                ChaControl.GetComponentInChildren<FaceBlendShape>(true).enabled = false;
+            }
         }
 
         public float this[string key]

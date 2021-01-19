@@ -37,7 +37,7 @@ namespace HardcoreMode
                 {
                     playerController = controller;
                     playerController.statusHUD.SetScale(new Vector3(1.25f, 1f, 1f));
-                    playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value, PlayerStats.Value);
+                    playerController.statusHUD.SetVisible(Status.visibileHUD, PlayerDeath.Value != DeathType.None, PlayerStats.Value);
                     continue;
                 }
 

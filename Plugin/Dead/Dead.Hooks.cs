@@ -10,7 +10,7 @@ namespace HardcoreMode
         [HarmonyPrefix, HarmonyPatch(typeof(EditPlayer), "StartChange")]
         public static void Prefix_EditPlayer_OnAwake(PlayerActor player)
         {
-            if (!PlayerStats.Value && !PlayerDeath.Value)
+            if (!PlayerStats.Value && PlayerDeath.Value == DeathType.None)
                 return;
 
             player.ChaControl.chaFile.SaveCharaFile(
@@ -23,7 +23,7 @@ namespace HardcoreMode
         [HarmonyPrefix, HarmonyPatch(typeof(MapScene), "SaveProfile")]
         public static void Prefix_MapScene_SaveProfile(bool isAuto = false)
         {
-            if ((!PlayerStats.Value && !PlayerDeath.Value) ||
+            if ((!PlayerStats.Value && PlayerDeath.Value == DeathType.None) ||
                 playerController == null)
                 return;
 

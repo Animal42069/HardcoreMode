@@ -8,7 +8,7 @@ namespace HardcoreMode
         static partial class Dead
         {
             const float WIDTH = 200f;
-            const float HEIGHT = 120f;
+            const float HEIGHT = 200f;
 
             static Rect rect = new Rect((Screen.width - WIDTH) / 2f, 20f, WIDTH, HEIGHT);
             static Rect innerRect = new Rect(0f, 10f, WIDTH, HEIGHT);
@@ -23,13 +23,20 @@ namespace HardcoreMode
                     GUILayout.BeginVertical();
                     {
                         GUILayout.Label("You Died", labelStyle);
-                        GUILayout.Label("Change your player character.", subLabelStyle);
+                        GUILayout.Label("Change your player character or revive.", subLabelStyle);
+
+                        if (PlayerDeath.Value != DeathType.PermaDeath)
+                            GUILayout.Label("Revived character will lose all items, equipment and skills", subLabelStyle);
 
                         GUILayout.BeginHorizontal();
                         {
                             GUILayout.FlexibleSpace();
                             GUILayout.BeginVertical();
                             {
+                                if (PlayerDeath.Value != DeathType.PermaDeath)
+                                    if (GUILayout.Button("Revive"))
+                                        Status.RevivePlayer();
+
                                 if (GUILayout.Button("Device Menu"))
                                     OpenDeviceMenu();
 
@@ -48,7 +55,7 @@ namespace HardcoreMode
 
             static public void OnGUI()
             {
-                if (!PlayerDeath.Value ||
+                if (PlayerDeath.Value == DeathType.None ||
                     playerController == null ||
                     playerController["health"] > 0 ||
                     !MapUIContainer.IsInstance() ||

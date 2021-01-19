@@ -22,19 +22,20 @@ namespace HardcoreMode
         [HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
         public static bool Prefix_ChaFile_SaveFile(ChaFile __instance, BinaryWriter bw, bool savePng, int lang)
         {
-            if (playerController == null ||
-                (!PlayerDeath.Value && !AgentDeath.Value) || !Permadeath.Value)
+            if (playerController == null)
                 return true;
 
-            if (playerController.ChaFileControl == __instance)
+            if (PlayerDeath.Value == DeathType.PermaDeath && playerController.ChaFileControl == __instance)
             {
                 if (playerController["health"] == 0)
                     return false;
             }
-            else
+            else if (AgentDeath.Value == DeathType.PermaDeath)
+            {
                 foreach (var controller in agentControllers.Where(n => n != null))
                     if (controller.ChaFileControl == __instance && controller["health"] == 0)
                         return false;
+            }
 
             return true;
         }
@@ -58,6 +59,5 @@ namespace HardcoreMode
         {
             Status.InitializeTime(__instance);
         }
-
     }
 }

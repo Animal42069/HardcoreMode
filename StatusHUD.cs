@@ -96,12 +96,22 @@ namespace HardcoreMode
             foodBarGuage.gameObject.SetActive(displayStats);
         }
 
-        public void Update(float health, float stamina, float food, float water)
+        public void Update(float health, float stamina, float food, float water, float revive = 0)
         {
             if (!initialized || !statusHUD.activeSelf)
                 return;
 
-            healthBarGuage.fillAmount = health / 100;
+            if (health == 0)
+            {
+                healthBarGuage.color = new Color(1, 0, 1, 0.5f);
+                healthBarGuage.fillAmount = revive / 100;
+            }
+            else
+            {
+                healthBarGuage.color = new Color(1, 0, 0, 0.5f);
+                healthBarGuage.fillAmount = health / 100;
+            }
+
             staminaBarGuage.fillAmount = stamina / 100;
             foodBarGuage.fillAmount = food / 100;
             waterBarGuage.fillAmount = water / 100;
