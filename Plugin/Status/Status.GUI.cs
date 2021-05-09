@@ -91,22 +91,28 @@ namespace HardcoreMode
                     }
                     playerFatigue = playerFatigueObject.GetComponentsInChildren<Text>(true).Where(x => x.name.Contains("PhysicalLabel")).FirstOrDefault();
 
-                    playerHealthObject = Instantiate(statusGuage);
-                    playerHealthObject.transform.SetParent(playerContentUI.transform);
-                    playerHealthObject.name = "PlayerHealth";
-                    playerHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
-                    playerHealthObject.transform.localScale = new Vector3(1, 1, 1);
+                    if (playerHealthObject == null)
+                    {
+                        playerHealthObject = Instantiate(statusGuage);
+                        playerHealthObject.transform.SetParent(playerContentUI.transform);
+                        playerHealthObject.name = "PlayerHealth";
+                        playerHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
+                        playerHealthObject.transform.localScale = new Vector3(1, 1, 1);
+                    }
                     playerHealthObject.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().localScale = new Vector3(1f, 1.1f, 1f);
                     playerHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().color = new Color(1, 1, 1, 1);
                     playerHealthObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("PlayerHealth")).FirstOrDefault().sizeDelta = new Vector2(254, 25);
                     playerHealthBar = playerHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("PlayerHealth")).FirstOrDefault();
                     playerHealthBar.color = new Color(1, 0, 0, 1f);
 
-                    agentHealthObject = Instantiate(statusGuage);
-                    agentHealthObject.transform.SetParent(agentContentUI.transform);
-                    agentHealthObject.name = "AgentHealth";
-                    agentHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
-                    agentHealthObject.transform.localScale = new Vector3(1, 1, 1);
+                    if (agentHealthObject == null)
+                    {
+                        agentHealthObject = Instantiate(statusGuage);
+                        agentHealthObject.transform.SetParent(agentContentUI.transform);
+                        agentHealthObject.name = "AgentHealth";
+                        agentHealthObject.transform.localPosition = new Vector3(-310f, -370f, 0);
+                        agentHealthObject.transform.localScale = new Vector3(1, 1, 1);
+                    }
                     agentHealthObject.GetComponentsInChildren<Transform>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().localScale = new Vector3(1f, 1.1f, 1f);
                     agentHealthObject.GetComponentsInChildren<Image>(true).Where(x => x.name.Contains("Image")).FirstOrDefault().color = new Color(1, 1, 1, 1);
                     agentHealthObject.GetComponentsInChildren<RectTransform>(true).Where(x => x.name.Contains("AgentHealth")).FirstOrDefault().sizeDelta = new Vector2(254, 25);
@@ -119,11 +125,18 @@ namespace HardcoreMode
                 }
                 catch
                 {
-                    Console.WriteLine("Hardcore Mode Failed to Initialize");
+                    Debug.Log("Hardcore Mode Failed to Initialize");
                     initialized = false;
                     visibileHUD = false;
                     SetHudVisibility(visibileHUD);
                 }
+            }
+
+            public static void Uninitialize()
+            {
+                initialized = false;
+                visibileHUD = false;
+                SetHudVisibility(visibileHUD);
             }
 
             public static void UpdateCellPhoneVisibility(bool playerHealth, bool playerStats, bool agentHealth)

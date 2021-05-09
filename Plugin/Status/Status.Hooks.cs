@@ -1,5 +1,6 @@
 ﻿using AIChara;
 using HarmonyLib;
+using System;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -47,17 +48,38 @@ namespace HardcoreMode
             FoodMenu.Initialize();
         }
 
+        [HarmonyPostfix, HarmonyPatch(typeof(Manager.Housing), "EndHousing")]
+        private static void Housing_EndHousing()
+        {
+            Status.Initialize();
+            FoodMenu.Initialize();
+        }
+
         [HarmonyPostfix, HarmonyPatch(typeof(AIProject.UI.StatusUI), "RefreshEquipments")]
         public static void StatusUI_RefreshEquipments(int id)
         {
-            if (id > 0)
-                Status.UpdateSelectedAgent(id - 1);
+            if (id <= 0)
+                return;
+
+            Status.UpdateSelectedAgent(id - 1);
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(EnviroSky), "AssignAndStart")]
         public static void EnviroSky_AssignAndStart(EnviroSky __instance)
         {
             Status.InitializeTime(__instance);
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Manager.Map), "ReleaseMap")]
+        public static void MapManager_ReleaseMap()
+        {
+            Status.Uninitialize();
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Manager.Housing), "StartHousing")]
+        private static void Housing_StartHousing()
+        {
+            Status.Uninitialize();
         }
     }
 }

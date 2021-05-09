@@ -63,7 +63,7 @@ namespace HardcoreMode
             }
             catch
             {
-                Console.WriteLine($"Hardcore Mode Failed to Initialze HUD for {characterName}");
+                Debug.Log($"Hardcore Mode Failed to Initialze HUD for {characterName}");
                 Destroy();
                 initialized = false;
             }

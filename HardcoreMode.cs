@@ -13,7 +13,7 @@ namespace HardcoreMode
     {
         const string GUID = "com.fairbair.hardcoremode";
         const string Name = "Hardcore Mode";
-        const string Version = "2.0.2";
+        const string Version = "2.0.3";
         const string BEHAVIOR = "HardcoreMode.LifeStats";
 
         const string SECTION_GENERAL = "General";

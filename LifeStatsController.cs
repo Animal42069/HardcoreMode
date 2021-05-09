@@ -76,7 +76,9 @@ namespace HardcoreMode
 
         protected override void OnDestroy()
         {
-            statusHUD.Destroy();
+            if (statusHUD != null)
+                statusHUD.Destroy();
+
             HardcoreMode.RemoveController(this);
 
             base.OnDestroy();

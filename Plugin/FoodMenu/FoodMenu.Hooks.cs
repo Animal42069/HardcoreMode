@@ -20,7 +20,5 @@ namespace HardcoreMode
         {
             FoodMenu.SetCurrentItem(item);
         }
-
-
     }
 }
